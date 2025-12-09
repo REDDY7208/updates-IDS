@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDS - Intrusion Detection System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .upload-section {
+            text-align: center;
+            padding: 40px;
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-section:hover {
+            background: #eef1ff;
+            border-color: #764ba2;
+        }
+        
+        .upload-section input[type="file"] {
+            display: none;
+        }
+        
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            opacity: 0.9;
+        }
+        
+        .attack-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .attack-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background: #f8f9ff;
+        }
+        
+        .attack-item.danger {
+            background: #ffe5e5;
+            border-left: 4px solid #ff4444;
+        }
+        
+        .attack-item.safe {
+            background: #e5ffe5;
+            border-left: 4px solid #44ff44;
+        }
+        
+        .attack-name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .attack-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .predictions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .predictions-table th,
+        .predictions-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .predictions-table th {
+            background: #667eea;
+            color: white;
+        }
+        
+        .predictions-table tr:hover {
+            background: #f8f9ff;
+        }
+        
+        .confidence-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #44ff44, #ffaa44, #ff4444);
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ IDS - Intrusion Detection System</h1>
+            <p>Multi-Attack Detection with 15+ Attack Classes</p>
+        </div>
+        
+        <div class="card">
+            <h2>Upload Network Traffic Data</h2>
+            <div class="upload-section" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📁</div>
+                <h3>Click to Upload CSV File</h3>
+                <p>Supports CIC-IDS and UNSW-NB15 format</p>
+                <input type="file" id="fileInput" accept=".csv" onchange="handleFileSelect(event)">
+            </div>
+            <div id="fileName" style="margin-top: 15px; text-align: center; font-weight: bold;"></div>
+            <div style="text-align: center;">
+                <button class="btn" id="analyzeBtn" onclick="analyzeFile()" disabled>Analyze Traffic</button>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing network traffic...</p>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="card">
+                <h2>Detection Results</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="totalRows">0</h3>
+                        <p>Total Packets</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="attackCount">0</h3>
+                        <p>Attacks Detected</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="attackTypes">0</h3>
+                        <p>Attack Types</p>
+                    </div>
+                </div>
+                
+                <h3>Attack Distribution</h3>
+                <div class="attack-list" id="attackList"></div>
+                
+                <h3 style="margin-top: 30px;">Sample Predictions (First 100 rows)</h3>
+                <div style="overflow-x: auto;">
+                    <table class="predictions-table">
+                        <thead>
+                            <tr>
+                                <th>Row</th>
+                                <th>Prediction</th>
+                                <th>Confidence</th>
+                            </tr>
+                        </thead>
+                        <tbody id="predictionsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedFile = null;
+        
+        function handleFileSelect(event) {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
+                document.getElementById('fileName').textContent = `Selected: ${selectedFile.name}`;
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+        
+        async function analyzeFile() {
+            if (!selectedFile) return;
+            
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('analyzeBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/api/predict-file', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error analyzing file: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+        
+        function displayResults(data) {
+            document.getElementById('totalRows').textContent = data.total_rows.toLocaleString();
+            
+            const attackCount = data.total_rows - (data.attack_summary['Normal'] || 0);
+            document.getElementById('attackCount').textContent = attackCount.toLocaleString();
+            document.getElementById('attackTypes').textContent = Object.keys(data.attack_summary).length;
+            
+            // Display attack distribution
+            const attackList = document.getElementById('attackList');
+            attackList.innerHTML = '';
+            
+            const sortedAttacks = Object.entries(data.attack_summary)
+                .sort((a, b) => b[1] - a[1]);
+            
+            sortedAttacks.forEach(([attack, count]) => {
+                const item = document.createElement('div');
+                item.className = `attack-item ${attack === 'Normal' ? 'safe' : 'danger'}`;
+                item.innerHTML = `
+                    <span class="attack-name">${attack}</span>
+                    <span class="attack-count">${count.toLocaleString()}</span>
+                `;
+                attackList.appendChild(item);
+            });
+            
+            // Display predictions table
+            const tbody = document.getElementById('predictionsBody');
+            tbody.innerHTML = '';
+            
+            data.predictions.forEach(pred => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${pred.row}</td>
+                    <td><strong>${pred.prediction}</strong></td>
+                    <td>
+                        <div>${pred.confidence.toFixed(2)}%</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${pred.confidence}%"></div>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
