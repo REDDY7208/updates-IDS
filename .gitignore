@@ -1,0 +1,91 @@
+# Dataset files and directories
+Datasets/
+*.csv
+*.parquet
+*.pkl
+*.h5
+*.hdf5
+
+# Model files (keep only essential ones)
+models/
+*.keras
+*.h5
+*.pb
+*.ckpt
+*.weights
+
+# Keep praveen folder but ignore large model files in it
+praveen/*.keras
+praveen/*.h5
+
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Large generated files
+large_attack_dataset.csv
+test_attack_data.csv
+*_attacks.csv
+
+# Keep these important files (override above patterns)
+!requirements*.txt
+!README*.md
+!*.py
+!praveen/scaler.pkl
+!praveen/label_encoder.pkl
+!praveen/feature_names.pkl
